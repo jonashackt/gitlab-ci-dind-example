@@ -33,6 +33,8 @@ before_script:
 
 build-image:
   stage: build
+  tags: 
+    - dind
   script:
     - mvn clean install
 
