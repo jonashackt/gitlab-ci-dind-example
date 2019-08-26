@@ -10,11 +10,17 @@ See [.gitlab-ci.yml](.gitlab-ci.yml):
 # https://github.com/jonashackt/restexamples/blob/master/.gitlab-ci.yml
 # We use Docker in Docker here with a docker executor instead of the shell one
 image: docker:stable
+
+# pin the right Docker version for the service
 services:
-  - docker:dind
+  - docker:19.03.1-dind
+
 variables:
+  # see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled for Dind configuration
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
+  # see usage of Namespaces at https://docs.gitlab.com/ee/user/group/#namespaces
+  REGISTRY_GROUP_PROJECT: $CI_REGISTRY/root/gitlab-ci-dind-example
 
 # One of the new trends in Continuous Integration/Deployment is to:
 # (see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html)
@@ -30,10 +36,6 @@ stages:
   - push
   - deploy
 
-# see usage of Namespaces at https://docs.gitlab.com/ee/user/group/#namespaces
-variables:
-  REGISTRY_GROUP_PROJECT: $CI_REGISTRY/root/restexamples
-
 # see how to login at https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#using-the-gitlab-container-registry
 before_script:
   - printenv
@@ -41,8 +43,10 @@ before_script:
 
 build-image:
   stage: build
+  tags: 
+    - dind
   script:
-    - mvn clean install
+    - docker build . --tag $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 test-image:
   stage: test
@@ -52,7 +56,7 @@ test-image:
 push-image:
   stage: push
   script:
-    - docker push $REGISTRY_GROUP_PROJECT/restexamples:latest
+    - docker push $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 deploy-2-dev:
   stage: deploy

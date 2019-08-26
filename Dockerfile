@@ -3,8 +3,8 @@
 # 1. Building the App with Maven
 FROM maven:3-jdk-8-alpine
 
-ADD . /restexamples
-WORKDIR /restexamples
+ADD . /gitlab-ci-dind-example
+WORKDIR /gitlab-ci-dind-example
 
 # Just echo so we can see, if everything is there :)
 RUN ls -l
@@ -21,7 +21,7 @@ MAINTAINER Jonas Hecht
 VOLUME /tmp
 
 # Add Spring Boot app.jar to Container
-COPY --from=0 "/restexamples/target/restexamples-0.0.1-SNAPSHOT.jar" app.jar
+COPY --from=0 "/gitlab-ci-dind-example/target/gitlab-ci-dind-example-0.0.1-SNAPSHOT.jar" app.jar
 
 ENV JAVA_OPTS=""
 
