@@ -1,7 +1,7 @@
 # Docker multi-stage build
 
 # 1. Building the App with Maven
-FROM maven:3-jdk-8-alpine
+FROM maven:3-jdk-11
 
 ADD . /gitlab-ci-dind-example
 WORKDIR /gitlab-ci-dind-example
@@ -14,7 +14,7 @@ RUN mvn clean install
 
 
 # Just using the build artifact and then removing the build-container
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11-jre
 
 MAINTAINER Jonas Hecht
 
