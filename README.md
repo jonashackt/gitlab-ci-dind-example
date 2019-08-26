@@ -1,7 +1,7 @@
-Example Spring Boot project for building inside GitLab CI
+Example app for building inside GitLab CI - using Docker-in-Docker
 =============================
 
-### GitLab CI Docker-in-Docker example
+This GitLab CI example needs a corresponding GitLab runner configuration - see https://github.com/jonashackt/gitlab-ci-stack#configure-a-docker-in-docker-enabled-gitlab-runner-with-the-docker-executor
 
 See [.gitlab-ci.yml](.gitlab-ci.yml):
 
@@ -82,6 +82,35 @@ deploy-2-dev:
 
 
 ```
+
+#### layer caching for Docker-in-Docker
+
+Possible optimisation: [Making docker-in-docker builds faster with Docker layer caching](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching): As the Docker Engine used with Docker-in-Docker will download the images every time the pipeline starts a build, it will slow down your builds. Here the `--cache-from` argument of the `docker run` command can help.
+
+
+#### No modern full-Docker workflow possible!
+
+Big problem: The "new trends in Continuous Integration/Deployment" aren't applieable with Docker-in-Docker - those are:
+
+```
+# One of the new trends in Continuous Integration/Deployment is to:
+# (see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html)
+#
+# 1. Create an application image
+# 2. Run tests against the created image
+# 3. Push image to a remote registry
+# 4. Deploy to a server from the pushed image
+
+stages:
+  - build
+  - test
+  - push
+  - deploy
+``` 
+
+Since we do our `docker build` inside the `build` stage - and the Pipeline tries to push the resulting Docker image in the `push` stage - but images aren't shared or kept up over stages - we can't implement this desired workflow. For more info, have a look at the overview ASCII art here: https://github.com/jonashackt/gitlab-ci-stack#configure-a-docker-in-docker-enabled-gitlab-runner-with-the-docker-executor
+
+One possible workaround is to skip the 4 phases and do just a `build-push`, then `test` and then `deploy` - which brings the drawback of "releasing" un-tested images to our registry.
 
 
 ### Simple REST Spring Boot app
