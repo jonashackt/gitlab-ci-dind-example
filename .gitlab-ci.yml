@@ -31,22 +31,22 @@ variables:
 # 4. Deploy to a server from the pushed image
 
 stages:
-  - build
+  - build_push
   - test
-  - push
   - deploy
 
 # see how to login at https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#using-the-gitlab-container-registry
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
-build-image:
-  stage: build
+build-push-image:
+  stage: build_push
   # the tag 'dind' advices only GitLab runners using this tag to pick up that job
   tags: 
     - dind
   script:
     - docker build . --tag $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
+    - docker push $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 test-image:
   stage: test
@@ -54,13 +54,6 @@ test-image:
     - dind
   script:
     - echo Insert fancy API test here!
-
-push-image:
-  stage: push
-  tags:
-    - dind
-  script:
-    - docker push $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 deploy-2-dev:
   stage: deploy

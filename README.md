@@ -110,7 +110,14 @@ stages:
 
 Since we do our `docker build` inside the `build` stage - and the Pipeline tries to push the resulting Docker image in the `push` stage - but images aren't shared or kept up over stages - we can't implement this desired workflow. For more info, have a look at the overview ASCII art here: https://github.com/jonashackt/gitlab-ci-stack#configure-a-docker-in-docker-enabled-gitlab-runner-with-the-docker-executor
 
-One possible workaround is to skip the 4 phases and do just a `build-push`, then `test` and then `deploy` - which brings the drawback of "releasing" un-tested images to our registry.
+One possible workaround is to skip the 4 phases and do just a `build_push`, then `test` and then `deploy` - which brings the drawback of "releasing" un-tested images to our registry:
+
+```
+stages:
+  - build_push
+  - test
+  - deploy
+```
 
 
 ### Simple REST Spring Boot app
