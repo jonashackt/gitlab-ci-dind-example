@@ -23,3 +23,6 @@ target
 
 # logback
 logback.out.xml
+
+# Docker
+builds
