@@ -42,6 +42,7 @@ before_script:
 
 build-image:
   stage: build
+  # the tag 'dind' advices only GitLab runners using this tag to pick up that job
   tags: 
     - dind
   script:
@@ -49,16 +50,22 @@ build-image:
 
 test-image:
   stage: test
+  tags:
+    - dind
   script:
     - echo Insert fancy API test here!
 
 push-image:
   stage: push
+  tags:
+    - dind
   script:
     - docker push $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 deploy-2-dev:
   stage: deploy
+  tags:
+    - dind
   script:
     - echo You should use Ansible here!
   environment:

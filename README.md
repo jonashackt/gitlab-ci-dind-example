@@ -9,16 +9,24 @@ See [.gitlab-ci.yml](.gitlab-ci.yml):
 # This .gitlab-ci.yml is an extension of the example provided in: 
 # https://github.com/jonashackt/restexamples/blob/master/.gitlab-ci.yml
 # We use Docker in Docker here with a docker executor instead of the shell one
-image: docker:stable
+# --> Pinning the right Docker version for the service
+image: docker:19.03.1
 
-# pin the right Docker version for the service
+# Pinning the right Docker version for the service also
 services:
   - docker:19.03.1-dind
 
 variables:
   # see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled for Dind configuration
-  DOCKER_HOST: tcp://docker:2375
+  # DOCKER_HOST: tcp://docker:2375 --> this should only be configured when using Kubernetes runners
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
   DOCKER_DRIVER: overlay2
+  # Specify to Docker where to create the certificates, Docker will
+  # create them automatically on boot, and will create
+  # `/certs/client` that will be shared between the service and job
+  # container, thanks to volume mount from config.toml
+  DOCKER_TLS_CERTDIR: "/certs"
   # see usage of Namespaces at https://docs.gitlab.com/ee/user/group/#namespaces
   REGISTRY_GROUP_PROJECT: $CI_REGISTRY/root/gitlab-ci-dind-example
 
@@ -38,11 +46,11 @@ stages:
 
 # see how to login at https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#using-the-gitlab-container-registry
 before_script:
-  - printenv
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build-image:
   stage: build
+  # the tag 'dind' advices only GitLab runners using this tag to pick up that job
   tags: 
     - dind
   script:
@@ -50,16 +58,22 @@ build-image:
 
 test-image:
   stage: test
+  tags:
+    - dind
   script:
     - echo Insert fancy API test here!
 
 push-image:
   stage: push
+  tags:
+    - dind
   script:
     - docker push $REGISTRY_GROUP_PROJECT/gitlab-ci-dind-example:latest
 
 deploy-2-dev:
   stage: deploy
+  tags:
+    - dind
   script:
     - echo You should use Ansible here!
   environment:
